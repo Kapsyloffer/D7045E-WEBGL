@@ -137,7 +137,10 @@ function draw() {
     }
     else { // turn off vertexAttribArray and set a constant attribute color
         gl.disableVertexAttribArray(attributeColor);
-        gl.vertexAttrib3f(attributeColor, 1, 0, 0);
+        var r = 255;
+        var g = 215;
+        var b = 0;
+        gl.vertexAttrib3f(attributeColor, r/255, g/255, b/255); //Task 2
     }
     
     /* Set the pointsize uniform variable */
