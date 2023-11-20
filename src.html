@@ -13,31 +13,33 @@
 
 "use strict";
 
-const  vertexShaderSource =
-       "attribute vec2 a_coords;\n" +
-       "attribute vec3 a_color;\n" +
-       "varying vec3 v_color;\n" +
-       "uniform float u_pointsize;\n" +
-       "uniform float u_width;\n" +
-       "uniform float u_height;\n" +
-       "void main() {\n" +
-       "   float x = -1.0 + 2.0*(a_coords.x / u_width);\n" +
-       "   float y = 1.0 - 2.0*(a_coords.y / u_height);\n" +
-       "   gl_Position = vec4(x, y, 0.0, 1.0);\n" +
-       "   v_color = a_color;\n" +
-       "   gl_PointSize = u_pointsize;\n" +
-       "}\n";
+const  vertexShaderSource = `
+       attribute vec2 a_coords;
+       attribute vec3 a_color;
+       varying vec3 v_color;
+       attribute float a_size;
+       varying float v_size;
+       uniform float u_pointsize;
+       uniform float u_width;
+       uniform float u_height;
+       void main() {
+          float x = -1.0 + 2.0*(a_coords.x / u_width);
+          float y = 1.0 - 2.0*(a_coords.y / u_height);
+          gl_Position = vec4(x, y, 0.0, 1.0);
+          v_color = a_color;
+          gl_PointSize = u_pointsize;
+       }`;
 
-const  fragmentShaderSource =
-       "precision mediump float;\n" +
-       "varying vec3 v_color;\n" +
-       "void main() {\n" +
-       "   float distanceFromCenter = distance( gl_PointCoord, vec2(0.5,0.5) );\n" +
-       "   if ( distanceFromCenter >= 0.5 ) {\n" +
-       "       discard;  // don't draw this pixel!\n" +
-       "   }\n" +
-       "   gl_FragColor = vec4(v_color, 1.0);\n" +
-       "}\n";
+const  fragmentShaderSource =`
+       precision mediump float;
+       varying vec3 v_color;
+       void main() {
+          float distanceFromCenter = distance( gl_PointCoord, vec2(0.5,0.5) );
+          if ( distanceFromCenter >= 0.5 ) {
+              discard;  // don't draw this pixel!
+          }
+          gl_FragColor = vec4(v_color, 1.0);
+       }`;
 
 let  canvas;  // The canvas where WebGL draws.
 let  gl;  // The WebGL graphics context.
