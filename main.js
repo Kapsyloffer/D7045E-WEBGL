@@ -5,16 +5,17 @@ const  vertexShaderSource = `
        attribute vec3 a_color;
        varying vec3 v_color;
        attribute float a_size;
-       varying float v_size;
-       uniform float u_pointsize;
-       uniform float u_width;
+       varying float v_size;` +
+       //uniform float u_pointsize;
+       `uniform float u_width;
        uniform float u_height;
        void main() {
           float x = -1.0 + 2.0*(a_coords.x / u_width);
           float y = 1.0 - 2.0*(a_coords.y / u_height);
           gl_Position = vec4(x, y, 0.0, 1.0);
           v_color = a_color;
-          gl_PointSize = u_pointsize;
+          v_size = a_size;
+          gl_PointSize = a_size;
        }`;
 
 const  fragmentShaderSource =`
@@ -34,6 +35,8 @@ let  gl;  // The WebGL graphics context.
 let  uniformWidth;   // Location of uniform named "u_width"
 let  uniformHeight;  // Location of uniform named "u_height"
 let  uniformPointsize;   // Location of uniform named "u_pointsize" 
+let  attributeSize;
+let  bufferSize; 
 
 let  attributeCoords;  // Location of the attribute named "a_coords".
 let  bufferCoords;     // A vertex buffer object to hold the values for coords.
@@ -52,17 +55,23 @@ const  POINT_COUNT = 100;
 const  pointCoords = new Float32Array( 2*POINT_COUNT );
 const  pointVelocities = new Float32Array( 2*POINT_COUNT );
 const  pointRandomColors = new Float32Array( 3*POINT_COUNT );
+const  sizeArray = new Float32Array(POINT_COUNT);
 
 function createPointData() { // called during initialization to fill the arrays with data.
     for (let i = 0; i < POINT_COUNT; i++) {
-           // Each point has two coordinates and two velocities.  Velocity number k
-           // tells how fast coordinate number k changes in pixels per frame.
+        // Each point has two coordinates and two velocities.  Velocity number k
+        // tells how fast coordinate number k changes in pixels per frame.
+        
         pointCoords[2*i] = canvas.width * Math.random();  // x-coordinate of point
         pointCoords[2*i+1] = canvas.height * Math.random();  // y-coordinate of point
+
         let  randomVelocity = 1 + 3*Math.random();
         let  randomAngle = 2*Math.PI * Math.random();
+
         pointVelocities[2*i] = randomVelocity * Math.cos(randomAngle);
         pointVelocities[2*i+1] = randomVelocity * Math.sin(randomAngle);
+
+        sizeArray[i] = Math.random() * 32 + 16;
     }
     for (let i = 0; i < 3 * POINT_COUNT; i++) {
            // The array contains color components, with three numbers per vertex.
@@ -72,27 +81,54 @@ function createPointData() { // called during initialization to fill the arrays 
 }
 
 function updatePointCoordsForFrame() { // called during an animation, before each frame.
-    let  size = Number(document.getElementById("sizeChoice").value) / 2; // radius
-    for (let i = 0; i < 2*POINT_COUNT; i += 2) { // x-coords
-        pointCoords[i] += pointVelocities[i];
-        if (pointCoords[i]-size < 0) {
-            pointCoords[i] = size-(pointCoords[i]-size);// move coord back onto canvas
-            pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
+    if(Number(document.getElementById("sizeChoice").value) != 0){
+        let  size = Number(document.getElementById("sizeChoice").value) / 2; // radius
+        for (let i = 0; i < 2*POINT_COUNT; i += 2) { // x-coords
+            pointCoords[i] += pointVelocities[i];
+            if (pointCoords[i]-size < 0) {
+                pointCoords[i] = size-(pointCoords[i]-size);// move coord back onto canvas
+                pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
+            }
+            else if (pointCoords[i]+size > canvas.width) {
+                pointCoords[i] = canvas.width - (pointCoords[i]+size - canvas.width) - size;// move coord back onto canvas
+                pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
+            }
         }
-        else if (pointCoords[i]+size > canvas.width) {
-            pointCoords[i] = canvas.width - (pointCoords[i]+size - canvas.width) - size;// move coord back onto canvas
-            pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
+        for (let i = 1; i < 2*POINT_COUNT; i += 2) { // y-coords
+            pointCoords[i] += pointVelocities[i];
+            if (pointCoords[i]-size < 0) {
+                pointCoords[i] = size-(pointCoords[i]-size);// move coord back onto canvas
+                pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
+            }
+            else if (pointCoords[i]+size > canvas.height) {
+                pointCoords[i] = canvas.height - (pointCoords[i]+size - canvas.height) - size;// move coord back onto canvas
+                pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
+            }
+        }     
+    }else{ //Random sizes
+        for (let i = 0; i < 2*POINT_COUNT; i += 2) { // x-coords
+            let size_x = sizeArray[(i/2)] / 2;
+            pointCoords[i] += pointVelocities[i];
+            if (pointCoords[i]-size_x < 0) {
+                pointCoords[i] = size_x-(pointCoords[i]-size_x);// move coord back onto canvas
+                pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
+            }
+            else if (pointCoords[i]+size_x > canvas.height) {
+                pointCoords[i] = canvas.height - (pointCoords[i]+size_x - canvas.height) - size_x;// move coord back onto canvas
+                pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
+            }
         }
-    }
-    for (let i = 1; i < 2*POINT_COUNT; i += 2) { // y-coords
-        pointCoords[i] += pointVelocities[i];
-        if (pointCoords[i]-size < 0) {
-            pointCoords[i] = size-(pointCoords[i]-size);// move coord back onto canvas
-            pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
-        }
-        else if (pointCoords[i]+size > canvas.height) {
-            pointCoords[i] = canvas.height - (pointCoords[i]+size - canvas.height) - size;// move coord back onto canvas
-            pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
+        for (let i = 1; i < 2*POINT_COUNT; i += 2) { // y-coords
+            let size_y = sizeArray[(i-1/2)] / 2;
+            pointCoords[i] += pointVelocities[i];
+            if (pointCoords[i]-size_y < 0) {
+                pointCoords[i] = size_y-(pointCoords[i]-size_y);// move coord back onto canvas
+                pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
+            }
+            else if (pointCoords[i]+size_y > canvas.height) {
+                pointCoords[i] = canvas.height - (pointCoords[i]+size_y - canvas.height) - size_y;// move coord back onto canvas
+                pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
+            }
         }
     }
 }
@@ -132,9 +168,17 @@ function draw() {
         gl.vertexAttrib3f(attributeColor, r/255, g/255, b/255); //Task 2
     }
     
+    if(Number(document.getElementById("sizeChoice").value) == 0){
+        gl.enableVertexAttribArray(attributeSize);
+    }else{
+        gl.disableVertexAttribArray(attributeSize);
+        /* Set the pointsize uniform variable */
+        gl.vertexAttrib1f(attributeSize, pointsize);
+    }
+
     /* Set the pointsize uniform variable */
     
-    gl.uniform1f( uniformPointsize, pointsize );
+    //gl.uniform1f( uniformPointsize, pointsize );
     
     /* Draw all the points with one command. */
    
@@ -178,19 +222,32 @@ function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
 function initGL() {
     let  prog = createProgram( gl, vertexShaderSource, fragmentShaderSource );
     gl.useProgram(prog);
+
     attributeCoords = gl.getAttribLocation(prog, "a_coords");
     bufferCoords = gl.createBuffer();
+
     attributeColor = gl.getAttribLocation(prog, "a_color");
+    attributeSize = gl.getAttribLocation(prog, "a_size");
+
     bufferColor = gl.createBuffer();
+    bufferSize = gl.createBuffer();
+
     uniformHeight = gl.getUniformLocation(prog, "u_height");
     uniformWidth = gl.getUniformLocation(prog, "u_width");
+
     gl.uniform1f(uniformHeight, canvas.height);
     gl.uniform1f(uniformWidth, canvas.width);
-    uniformPointsize = gl.getUniformLocation(prog, "u_pointsize");
+
+    //uniformPointsize = gl.getUniformLocation(prog, "u_pointsize");
     createPointData();
+
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferColor);
     gl.bufferData(gl.ARRAY_BUFFER, pointRandomColors, gl.STREAM_DRAW);
     gl.vertexAttribPointer(attributeColor, 3, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferSize);
+    gl.bufferData(gl.ARRAY_BUFFER, sizeArray, gl.STREAM_DRAW);
+    gl.vertexAttribPointer(attributeSize, 1, gl.FLOAT, false, 0, 0);
 }
 
 /*------------ Animation support ------------*/
