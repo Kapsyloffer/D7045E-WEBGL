@@ -5,9 +5,8 @@ const  vertexShaderSource = `
        attribute vec3 a_color;
        varying vec3 v_color;
        attribute float a_size;
-       varying float v_size;` +
-       //uniform float u_pointsize;
-       `uniform float u_width;
+       varying float v_size;
+       uniform float u_width;
        uniform float u_height;
        void main() {
           float x = -1.0 + 2.0*(a_coords.x / u_width);
@@ -81,57 +80,44 @@ function createPointData() { // called during initialization to fill the arrays 
 }
 
 function updatePointCoordsForFrame() { // called during an animation, before each frame.
-    if(Number(document.getElementById("sizeChoice").value) == 0){
+
         let  size = Number(document.getElementById("sizeChoice").value) / 2; // radius
-        for (let i = 0; i < 2*POINT_COUNT; i += 2) { // x-coords
-            pointCoords[i] += pointVelocities[i];
-            if (pointCoords[i]-size < 0) {
-                pointCoords[i] = size-(pointCoords[i]-size);// move coord back onto canvas
-                pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
+        let  sizeArr = new Int16Array(POINT_COUNT * 2);
+
+        for (let i = 0; i < POINT_COUNT; i++) { // fyll en size Array med proper storlek
+            if(size != 0){
+                sizeArr[i] = size;
+            } else {
+                sizeArr[i] = sizeArray[i];
             }
-            else if (pointCoords[i]+size > canvas.width) {
-                pointCoords[i] = canvas.width - (pointCoords[i]+size - canvas.width) - size;// move coord back onto canvas
-                pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
-            }
+        } 
+        helper(sizeArr); //Draw collisions
+}
+
+function helper(size)
+{
+    for (let i = 0; i < 2*POINT_COUNT; i += 2) { // x-coords
+        pointCoords[i] += pointVelocities[i];
+        if (pointCoords[i]-size[i] < 0) {
+            pointCoords[i] = size[i]-(pointCoords[i]-size[i]);// move coord back onto canvas
+            pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
         }
-        for (let i = 1; i < 2*POINT_COUNT; i += 2) { // y-coords
-            pointCoords[i] += pointVelocities[i];
-            if (pointCoords[i]-size < 0) {
-                pointCoords[i] = size-(pointCoords[i]-size);// move coord back onto canvas
-                pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
-            }
-            else if (pointCoords[i]+size > canvas.height) {
-                pointCoords[i] = canvas.height - (pointCoords[i]+size - canvas.height) - size;// move coord back onto canvas
-                pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
-            }
-        }     
-    }else{ //Random sizes
-        for (let i = 0; i < 2*POINT_COUNT; i += 2) { // x-coords
-            let size_x = sizeArray[(i-1/2)] / 2;
-            console.log(sizeArray);
-            pointCoords[i] += pointVelocities[i];
-            if (pointCoords[i]-size_x < 0) {
-                pointCoords[i] = size_x-(pointCoords[i]-size_x);// move coord back onto canvas
-                pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
-            }
-            else if (pointCoords[i]+size_x > canvas.height) {
-                pointCoords[i] = canvas.height - (pointCoords[i]+size_x - canvas.height) - size_x;// move coord back onto canvas
-                pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
-            }
-        }
-        for (let i = 1; i < 2*POINT_COUNT; i += 2) { // y-coords
-            let size_y = sizeArray[(i/2)] / 2;
-            pointCoords[i] += pointVelocities[i];
-            if (pointCoords[i]-size_y < 0) {
-                pointCoords[i] = size_y-(pointCoords[i]-size_y);// move coord back onto canvas
-                pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
-            }
-            else if (pointCoords[i]+size_y > canvas.height) {
-                pointCoords[i] = canvas.height - (pointCoords[i]+size_y - canvas.height) - size_y;// move coord back onto canvas
-                pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
-            }
+        else if (pointCoords[i]+size[i] > canvas.width) {
+            pointCoords[i] = canvas.width - (pointCoords[i]+size[i] - canvas.width) - size[i];// move coord back onto canvas
+            pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
         }
     }
+    for (let i = 1; i < 2*POINT_COUNT; i += 2) { // y-coords
+        pointCoords[i] += pointVelocities[i];
+        if (pointCoords[i]-size[i] < 0) {
+            pointCoords[i] = size[i]-(pointCoords[i]-size[i]);// move coord back onto canvas
+            pointVelocities[i] = Math.abs(pointVelocities[i]); // and make sure point is moving in positive direction
+        }
+        else if (pointCoords[i]+size[i] > canvas.height) {
+            pointCoords[i] = canvas.height - (pointCoords[i]+size[i] - canvas.height) - size[i];// move coord back onto canvas
+            pointVelocities[i] = -Math.abs(pointVelocities[i]); // and make sure point is moving in negative direction
+        }
+    }     
 }
 
 
@@ -141,7 +127,7 @@ function updatePointCoordsForFrame() { // called during an animation, before eac
  */
 function draw() {
 
-    gl.clearColor(0.8, 0.8, 0.8, 1);  // specify the color to be used for clearing <-- Task 1
+    gl.clearColor(0.7, 0.7, 0.7, 1);  // specify the color to be used for clearing <-- Task 1
     gl.clear(gl.COLOR_BUFFER_BIT);  // clear the canvas (to black)
     
     /* Get options from the user interface. */
