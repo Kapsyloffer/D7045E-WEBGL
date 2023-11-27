@@ -71,7 +71,7 @@ function createPointData() { // called during initialization to fill the arrays 
         pointVelocities[2*i] = randomVelocity * Math.cos(randomAngle);
         pointVelocities[2*i+1] = randomVelocity * Math.sin(randomAngle);
 
-        sizeArray[i] = Math.random() * 32 + 16;
+        sizeArray[i] = Math.round(Math.random() * 32 + 16);
     }
     for (let i = 0; i < 3 * POINT_COUNT; i++) {
            // The array contains color components, with three numbers per vertex.
@@ -81,7 +81,7 @@ function createPointData() { // called during initialization to fill the arrays 
 }
 
 function updatePointCoordsForFrame() { // called during an animation, before each frame.
-    if(Number(document.getElementById("sizeChoice").value) != 0){
+    if(Number(document.getElementById("sizeChoice").value) == 0){
         let  size = Number(document.getElementById("sizeChoice").value) / 2; // radius
         for (let i = 0; i < 2*POINT_COUNT; i += 2) { // x-coords
             pointCoords[i] += pointVelocities[i];
@@ -107,7 +107,8 @@ function updatePointCoordsForFrame() { // called during an animation, before eac
         }     
     }else{ //Random sizes
         for (let i = 0; i < 2*POINT_COUNT; i += 2) { // x-coords
-            let size_x = sizeArray[(i/2)] / 2;
+            let size_x = sizeArray[(i-1/2)] / 2;
+            console.log(sizeArray);
             pointCoords[i] += pointVelocities[i];
             if (pointCoords[i]-size_x < 0) {
                 pointCoords[i] = size_x-(pointCoords[i]-size_x);// move coord back onto canvas
@@ -119,7 +120,7 @@ function updatePointCoordsForFrame() { // called during an animation, before eac
             }
         }
         for (let i = 1; i < 2*POINT_COUNT; i += 2) { // y-coords
-            let size_y = sizeArray[(i-1/2)] / 2;
+            let size_y = sizeArray[(i/2)] / 2;
             pointCoords[i] += pointVelocities[i];
             if (pointCoords[i]-size_y < 0) {
                 pointCoords[i] = size_y-(pointCoords[i]-size_y);// move coord back onto canvas
