@@ -163,6 +163,7 @@ function draw() {
         gl.vertexAttrib1f(attributeSize, pointsize);
     }
 
+
     /* Set the pointsize uniform variable */
     
     //gl.uniform1f( uniformPointsize, pointsize );
@@ -170,7 +171,27 @@ function draw() {
     /* Draw all the points with one command. */
    
     gl.drawArrays(gl.POINTS, 0, POINT_COUNT);
+    drawDots();
     
+}
+
+function drawDots(){
+    
+    if (!document.getElementById("dotsCheckbox").checked)
+    {
+        return;
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferCoords);
+    gl.bufferData(gl.ARRAY_BUFFER, pointCoords, gl.STREAM_DRAW);
+
+    gl.disableVertexAttribArray(attributeColor);
+    gl.vertexAttrib3f(attributeColor, 0, 0, 0); //BLACK
+
+    gl.disableVertexAttribArray(attributeSize);
+    gl.vertexAttrib1f(attributeSize, 6);
+
+    
+    gl.drawArrays(gl.POINTS, 0, POINT_COUNT);
 }
 
 /**
@@ -291,6 +312,7 @@ function init() {
     }
     document.getElementById("animateCheckbox").checked = true;
     document.getElementById("colorCheckbox").checked = true;
+    document.getElementById("dotsCheckbox").checked = true;
     document.getElementById("sizeChoice").value = "32";
     document.getElementById("animateCheckbox").onchange = doAnimationCheckbox;
     document.getElementById("colorCheckbox").onchange = function() {
