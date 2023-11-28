@@ -50,7 +50,7 @@ let  animating = false;  // why are you running?
    colors are used when the user selects colored rather than red points.
    The positions of the points are updated for each frame of the animation. */
 
-const  POINT_COUNT = 100;
+const  POINT_COUNT = 20;
 const  pointCoords = new Float32Array( 2*POINT_COUNT );
 const  pointVelocities = new Float32Array( 2*POINT_COUNT );
 const  pointRandomColors = new Float32Array( 3*POINT_COUNT );
@@ -64,13 +64,16 @@ function createPointData() { // called during initialization to fill the arrays 
         pointCoords[2*i] = canvas.width * Math.random();  // x-coordinate of point
         pointCoords[2*i+1] = canvas.height * Math.random();  // y-coordinate of point
 
-        let  randomVelocity = 1 + 3*Math.random();
+        let  randomVelocity = 4 + 3*Math.random();
         let  randomAngle = 2*Math.PI * Math.random();
 
         pointVelocities[2*i] = randomVelocity * Math.cos(randomAngle);
         pointVelocities[2*i+1] = randomVelocity * Math.sin(randomAngle);
 
-        sizeArray[i] = Math.round(Math.random() * 32 + 16);
+        sizeArray[i] = Math.random() * 64 + 16;
+
+        //Check for overlap
+
     }
     for (let i = 0; i < 3 * POINT_COUNT; i++) {
            // The array contains color components, with three numbers per vertex.
@@ -82,7 +85,7 @@ function createPointData() { // called during initialization to fill the arrays 
 function updatePointCoordsForFrame() { // called during an animation, before each frame.
 
         let  size = Number(document.getElementById("sizeChoice").value) / 2; // radius
-        let  sizeArr = new Int16Array(POINT_COUNT * 2);
+        let  sizeArr = new Float32Array(POINT_COUNT * 2);
 
         for (let i = 0; i < POINT_COUNT; i++) { // fyll en size Array med proper storlek
             if(size != 0){
@@ -127,7 +130,7 @@ function helper(size)
  */
 function draw() {
 
-    gl.clearColor(0.7, 0.7, 0.7, 1);  // specify the color to be used for clearing <-- Task 1
+    gl.clearColor(0.3, 0.3, 0.3, 1);  // specify the color to be used for clearing <-- Task 1
     gl.clear(gl.COLOR_BUFFER_BIT);  // clear the canvas (to black)
     
     /* Get options from the user interface. */

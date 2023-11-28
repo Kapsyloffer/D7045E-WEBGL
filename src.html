@@ -1,35 +1,40 @@
 <!DOCTYPE html>
 <!-- saved from url=(0065)https://math.hws.edu/graphicsbook/source/webgl/moving-points.html -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Moving Disks in WebGL</title>
+        <script src="main.js"></script>
+        <style>
+            label {
+                margin-left: 30px;
+            }
+            html
+            {
+                background-color: rgb(20, 20, 20);
+                color: rgb(163, 163, 163);
+            }
+        </style>
+    </head>
+    <body>
+        <h2 style="text-align: center";>Moving Points with the WebGL POINTS primitive</h2>
 
-<title>Moving Disks in WebGL</title>
-<style>
-    label {
-        margin-left: 30px;
-    }
-</style>
-<script src="main.js"></script>
-</head>
-<body>
+        <noscript><p><b>Sorry, but this page requires JavaScript.</b></p></noscript>
 
-<h2>Moving Points with the WebGL POINTS primitive</h2>
+        <p style="display: flex; justify-content: center;">
+            <label><b><input type="checkbox" id="animateCheckbox">&nbsp;Animate</b></label>
+            <label><b><input type="checkbox" id="colorCheckbox">&nbsp;Random&nbsp;Colors</b></label>
+            <label><b><input type="checkbox" id="dotsCheckbox">&nbsp;Dots</b></label>
+            <label><b>Point Size:</b>&nbsp;<select id="sizeChoice">
+                <option value="16">Small</option>
+                <option value="32">Medium</option>
+                <option value="64">Large</option>
+                <option value="0">Random</option>
+            </select></label>
+        </p>
 
-<noscript><p><b>Sorry, but this page requires JavaScript.</b></p></noscript>
-
-<p>
-    <label><b><input type="checkbox" id="animateCheckbox">&nbsp;Animate</b></label>
-    <label><b><input type="checkbox" id="colorCheckbox">&nbsp;Random&nbsp;Colors</b></label>
-    <label><b><input type="checkbox" id="dotsCheckbox">&nbsp;Dots</b></label>
-    <label><b>Point Size:</b>&nbsp;<select id="sizeChoice">
-        <option value="16">Small</option>
-        <option value="32">Medium</option>
-        <option value="64">Large</option>
-        <option value="0">Random</option>
-    </select></label>
-</p>
-
-<div id="canvas-holder">
-<canvas id="webglcanvas" width="800" height="600"></canvas>
-</div>
-</body>
+            <div id="canvas-holder" style="display: flex; justify-content: center;">
+            <canvas id="webglcanvas" width="800" height="600"></canvas>
+            </div>
+    </body>
 </html>
