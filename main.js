@@ -51,7 +51,7 @@ let  overlap = false;
    colors are used when the user selects colored rather than red points.
    The positions of the points are updated for each frame of the animation. */
 
-const  POINT_COUNT = 2;
+const  POINT_COUNT = 10;
 const  pointCoords = new Float32Array( 2*POINT_COUNT );
 const  pointVelocities = new Float32Array( 2*POINT_COUNT );
 const  pointRandomColors = new Float32Array( 3*POINT_COUNT );
@@ -92,30 +92,48 @@ function updatePointCoordsForFrame() { // called during an animation, before eac
                 sizeArr[i] = sizeArray[i];
             }
         } 
-        detectCollisions(sizeArr); //detect collisions
         helper(sizeArr); //Draw collisions
+        detectCollisions(sizeArr); //detect collisions
 }
 
 function detectCollisions(sizeArr) {
     overlap = false;
     for (let i = 0; i < POINT_COUNT; i++) {
         for (let j = i + 1; j < POINT_COUNT; j++) {
-            let dx = pointCoords[2 * i] - pointCoords[2 * j];
-            let dy = pointCoords[2 * i + 1] - pointCoords[2 * j + 1];
+            let x1 = pointCoords[2 * i];
+            let x2 = pointCoords[2 * j];
+            let y1 = pointCoords[2 * i + 1];
+            let y2 = pointCoords[2 * j + 1];
+
+            let dx = x1 - x2;
+            let dy = y1 - y2;
+
             let distance = Math.sqrt(dx * dx + dy * dy);
             let combinedSize = sizeArr[i] + sizeArr[j];
 
             if (distance < combinedSize) {
                 overlap = true;
-                bounce(pointCoords[2 * i], pointCoords[2 * i + 1], pointCoords[2 * j], pointCoords[2 * j + 1])
+                bounce(sizeArr, i, j)
             }
         }
     }
 }
 
-function bounce(x1, y1, x2, y2)
+function bounce(sizeArr, i, j)
 {
+    let x1 = pointCoords[2 * i];
+    let x2 = pointCoords[2 * j];
+    let y1 = pointCoords[2 * i + 1];
+    let y2 = pointCoords[2 * j + 1];
     console.log(x1, y1, " bounced with ", x2, y2);
+
+    //TODO: FIX
+    pointVelocities[2*i] = -pointVelocities[2*i];
+    pointVelocities[2*i+1] = -pointVelocities[2*i+1];
+    
+    pointVelocities[2*j] = -pointVelocities[2*j];
+    pointVelocities[2*j+1] = -pointVelocities[2*j+1];
+
 }
 
 function helper(size)
@@ -151,11 +169,8 @@ function helper(size)
  */
 function draw() {
 
-    if (overlap) {
-        gl.clearColor(1.0, 0.0, 0.0, 1.0); // Change background color to red if overlap detected
-    } else {
-        gl.clearColor(0.3, 0.3, 0.3, 1); // specify the color to be used for clearing <-- Task 1
-    }
+    
+    gl.clearColor(0.3, 0.3, 0.3, 1); // specify the color to be used for clearing <-- Task 1
     gl.clear(gl.COLOR_BUFFER_BIT);  // clear the canvas (to black)
     
     /* Get options from the user interface. */
