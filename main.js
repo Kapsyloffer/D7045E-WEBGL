@@ -51,7 +51,7 @@ let  overlap = false;
    colors are used when the user selects colored rather than red points.
    The positions of the points are updated for each frame of the animation. */
 
-const  POINT_COUNT = 10;
+const  POINT_COUNT = 40;
 const  pointCoords = new Float32Array( 2*POINT_COUNT );
 const  pointVelocities = new Float32Array( 2*POINT_COUNT );
 const  pointRandomColors = new Float32Array( 3*POINT_COUNT );
@@ -125,7 +125,25 @@ function bounce(sizeArr, i, j)
     let x2 = pointCoords[2 * j];
     let y1 = pointCoords[2 * i + 1];
     let y2 = pointCoords[2 * j + 1];
-    console.log(x1, y1, " bounced with ", x2, y2);
+    
+    let dx = x1 - x2;
+    let dy = y1 - y2;
+
+    let distance = Math.sqrt(dx * dx + dy * dy);
+    let combinedSize = sizeArr[i] + sizeArr[j];
+
+    // Calculate overlap amount
+    let overlap = combinedSize - distance;
+
+    // Calculate normalized collision vector
+    let nx = dx / distance;
+    let ny = dy / distance;
+
+    // Move particles away from each other along the collision normal
+    pointCoords[2 * i] += 0.5 * overlap * nx;
+    pointCoords[2 * i + 1] += 0.5 * overlap * ny;
+    pointCoords[2 * j] -= 0.5 * overlap * nx;
+    pointCoords[2 * j + 1] -= 0.5 * overlap * ny;
 
     //TODO: FIX
     pointVelocities[2*i] = -pointVelocities[2*i];
