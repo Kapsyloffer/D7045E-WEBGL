@@ -9,17 +9,18 @@ const  vertexShaderSource = `
        uniform float u_width;
        uniform float u_height;
        void main() {
-          float x = -1.0 + 2.0*(a_coords.x / u_width);
-          float y = 1.0 - 2.0*(a_coords.y / u_height);
-          gl_Position = vec4(x, y, 0.0, 1.0);
-          v_color = a_color;
-          v_size = a_size;
-          gl_PointSize = a_size;
+            float x = -1.0 + 2.0 * (a_coords.x / u_width);
+            float y = 1.0 - 2.0 * (a_coords.y / u_height);
+            gl_Position = vec4(x, y, 0.0, 1.0);
+            v_color = a_color;
+            v_size = a_size;
+            gl_PointSize = a_size;
        }`;
 
 const  fragmentShaderSource =`
        precision mediump float;
        varying vec3 v_color;
+       varying float v_size;
        void main() {
           float distanceFromCenter = distance( gl_PointCoord, vec2(0.5,0.5) );
           if ( distanceFromCenter >= 0.5 ) {
@@ -44,14 +45,13 @@ let  attributeColor;   // Location of the attribute named "a_color".
 let  bufferColor;     // A vertex buffer object to hold the values for color.
 
 let  animating = false;  // why are you running?
-let  overlap = false;
 
 /* Data for the points, including their coordinates, velocities and colors.
    The values for the arrays are created during initialization.  The random
    colors are used when the user selects colored rather than red points.
    The positions of the points are updated for each frame of the animation. */
 
-const  POINT_COUNT = 40;
+const  POINT_COUNT = 15;
 const  pointCoords = new Float32Array( 2*POINT_COUNT );
 const  pointVelocities = new Float32Array( 2*POINT_COUNT );
 const  pointRandomColors = new Float32Array( 3*POINT_COUNT );
@@ -92,12 +92,11 @@ function updatePointCoordsForFrame() { // called during an animation, before eac
                 sizeArr[i] = sizeArray[i];
             }
         } 
-        helper(sizeArr); //Draw collisions
         detectCollisions(sizeArr); //detect collisions
+        helper(sizeArr); //Draw collisions
 }
 
 function detectCollisions(sizeArr) {
-    overlap = false;
     for (let i = 0; i < POINT_COUNT; i++) {
         for (let j = i + 1; j < POINT_COUNT; j++) {
             let x1 = pointCoords[2 * i];
@@ -112,8 +111,7 @@ function detectCollisions(sizeArr) {
             let combinedSize = sizeArr[i] + sizeArr[j];
 
             if (distance < combinedSize) {
-                overlap = true;
-                bounce(sizeArr, i, j)
+                bounce(sizeArr, i, j);
             }
         }
     }
@@ -123,6 +121,7 @@ function bounce(sizeArr, i, j)
 {
     let x1 = pointCoords[2 * i];
     let x2 = pointCoords[2 * j];
+
     let y1 = pointCoords[2 * i + 1];
     let y2 = pointCoords[2 * j + 1];
     
@@ -142,15 +141,22 @@ function bounce(sizeArr, i, j)
     // Move particles away from each other along the collision normal
     pointCoords[2 * i] += 0.5 * overlap * nx;
     pointCoords[2 * i + 1] += 0.5 * overlap * ny;
+
     pointCoords[2 * j] -= 0.5 * overlap * nx;
     pointCoords[2 * j + 1] -= 0.5 * overlap * ny;
 
-    //TODO: FIX
-    pointVelocities[2*i] = -pointVelocities[2*i];
-    pointVelocities[2*i+1] = -pointVelocities[2*i+1];
-    
-    pointVelocities[2*j] = -pointVelocities[2*j];
-    pointVelocities[2*j+1] = -pointVelocities[2*j+1];
+    //ELASTIC BOUNCE
+
+    let relativeVelocityX = pointVelocities[2 * i] - pointVelocities[2 * j];
+    let relativeVelocityY = pointVelocities[2 * i + 1] - pointVelocities[2 * j + 1];
+
+    let impulse = 2 * (nx * relativeVelocityX + ny * relativeVelocityY) / (1 / sizeArr[i] + 1 / sizeArr[j]);
+
+    pointVelocities[2 * i] -= impulse * (1 / sizeArr[i]) * nx;
+    pointVelocities[2 * i + 1] -= impulse * (1 / sizeArr[i]) * ny;
+
+    pointVelocities[2 * j] += impulse * (1 / sizeArr[j]) * nx;
+    pointVelocities[2 * j + 1] += impulse * (1 / sizeArr[j]) * ny;
 
 }
 
@@ -217,8 +223,9 @@ function draw() {
     }
     
     if(Number(document.getElementById("sizeChoice").value) == 0){
-        gl.enableVertexAttribArray(attributeSize);
+        gl.enableVertexAttribArray(attributeSize, 2.0);
     }else{
+        gl.enableVertexAttribArray(attributeSize, 1.0);
         gl.disableVertexAttribArray(attributeSize);
         /* Set the pointsize uniform variable */
         gl.vertexAttrib1f(attributeSize, pointsize);
